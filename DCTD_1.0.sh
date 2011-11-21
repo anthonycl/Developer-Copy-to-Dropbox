@@ -18,6 +18,7 @@
 ## Credits:
 ## Ask Function - http://snippets.davejamesmiller.com
 ## Bash General Knowledge - http://tldp.org/HOWTO/Bash-Prog-Intro-HOWTO.html & http://tldp.org/LDP/abs/html
+## irc.freenode.net #bash - Thanks to e36freak, greybot, and geirha for answering many questions.
 ##
 ## Dedicated to Steve Jobs RIP
 

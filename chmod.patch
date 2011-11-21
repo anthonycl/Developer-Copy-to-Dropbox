@@ -1,0 +1,104 @@
+diff -crB old/Makefile new/Makefile
+*** old/Makefile	2008-04-09 22:54:43.000000000 -0400
+--- new/Makefile	2011-11-18 16:01:09.000000000 -0500
+***************
+*** 1,5 ****
+  Project = chmod
+! Install_Dir = /bin
+  
+  CFILES = chmod.c chmod_acl.c
+  MANPAGES = chmod.1
+--- 1,5 ----
+  Project = chmod
+! Install_Dir = /usr/local/bin
+  
+  CFILES = chmod.c chmod_acl.c
+  MANPAGES = chmod.1
+diff -crB old/chmod.c new/chmod.c
+*** old/chmod.c	2008-10-16 01:53:24.000000000 -0400
+--- new/chmod.c	2011-11-18 16:57:06.000000000 -0500
+***************
+*** 389,395 ****
+  #ifdef __APPLE__
+  /* If an ACL manipulation option was specified, manipulate */
+  		if (acloptflags & ACL_FLAG)	{
+! 			if (0 != modify_file_acl(acloptflags, p->fts_accpath, acl_input, aclpos, inheritance_level))
+  				rval = 1;
+  		}
+  		else {
+--- 389,395 ----
+  #ifdef __APPLE__
+  /* If an ACL manipulation option was specified, manipulate */
+  		if (acloptflags & ACL_FLAG)	{
+! 			if (0 != modify_file_acl(acloptflags, p->fts_accpath, acl_input, aclpos, inheritance_level, !hflag))
+  				rval = 1;
+  		}
+  		else {
+diff -crB old/chmod_acl.c new/chmod_acl.c
+*** old/chmod_acl.c	2008-08-08 19:09:50.000000000 -0400
+--- new/chmod_acl.c	2011-11-18 16:57:06.000000000 -0500
+***************
+*** 672,678 ****
+  }
+  
+  int
+! modify_file_acl(unsigned int optflags, const char *path, acl_t modifier, int position, int inheritance_level) {
+  	
+  	acl_t oacl = NULL;
+  	unsigned aindex  = 0, flag_new_acl = 0;
+--- 672,678 ----
+  }
+  
+  int
+! modify_file_acl(unsigned int optflags, const char *path, acl_t modifier, int position, int inheritance_level, int follow) {
+  	
+  	acl_t oacl = NULL;
+  	unsigned aindex  = 0, flag_new_acl = 0;
+***************
+*** 807,815 ****
+   * "changeset" mechanism, common locking  strategy, or kernel
+   * supplied reservation mechanism to prevent this race.
+   */
+! 	if (!(optflags & (ACL_TO_STDOUT|ACL_CHECK_CANONICITY)) && 
+! 	    (0 != acl_set_file(path, ACL_TYPE_EXTENDED, oacl))){
+! 		if (!fflag)
+  			warn("Failed to set ACL on file '%s'", path);
+  		retval = 1;
+  	}
+--- 807,824 ----
+   * "changeset" mechanism, common locking  strategy, or kernel
+   * supplied reservation mechanism to prevent this race.
+   */
+! 	if (!(optflags & (ACL_TO_STDOUT|ACL_CHECK_CANONICITY))) {
+! 		int status = -1;
+! 		if (follow) {
+! 			status = acl_set_file(path, ACL_TYPE_EXTENDED, oacl);
+! 		} else {
+! 			int fd = open(path, O_SYMLINK);
+! 			if (fd != -1) {
+! 				status = acl_set_fd_np(fd, oacl, ACL_TYPE_EXTENDED);
+! 				close(fd);
+! 			}
+! 		}
+! 		if (status != 0 && !fflag)
+  			warn("Failed to set ACL on file '%s'", path);
+  		retval = 1;
+  	}
+diff -crB old/chmod_acl.h new/chmod_acl.h
+*** old/chmod_acl.h	2008-08-08 19:09:50.000000000 -0400
+--- new/chmod_acl.h	2011-11-18 17:01:36.000000000 -0500
+***************
+*** 80,85 ****
+  extern unsigned find_canonical_position(acl_t acl, acl_entry_t modifier);
+  extern int subtract_from_entry(acl_entry_t rentry, acl_entry_t modifier, int *valid_perms);
+  extern int modify_acl(acl_t *oaclp, acl_entry_t modifier, unsigned int optflags, int position, int inheritance_level, unsigned flag_new_acl, const char* path);
+! extern int modify_file_acl(unsigned int optflags, const char *path, acl_t modifier, int position, int inheritance_level);
+  extern uuid_t *name_to_uuid(char *tok, int nametype);
+  #endif /* __APPLE__*/
+--- 80,85 ----
+  extern unsigned find_canonical_position(acl_t acl, acl_entry_t modifier);
+  extern int subtract_from_entry(acl_entry_t rentry, acl_entry_t modifier, int *valid_perms);
+  extern int modify_acl(acl_t *oaclp, acl_entry_t modifier, unsigned int optflags, int position, int inheritance_level, unsigned flag_new_acl, const char* path);
+! extern int modify_file_acl(unsigned int optflags, const char *path, acl_t modifier, int position, int inheritance_level, int follow);
+  extern uuid_t *name_to_uuid(char *tok, int nametype);
+  #endif /* __APPLE__*/

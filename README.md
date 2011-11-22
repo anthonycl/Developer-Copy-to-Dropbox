@@ -7,7 +7,14 @@ Requirements
 ------------
 
 * A fairly recent OS X. OS X 10.5+ should be fine.
+* Dropbox
+* Xcode (Free in the App Store)
 * Cool apps
+
+Suggestions
+-----------
+
+Move your Dropbox to a general folder, not based on your username. This is easily accomplished by changing your Dropbox preferences in the menu bar. This is recommended, unless you use the same username across all computers you access for development and always will in the future.
 
 Supported Apps (Version Tested With)
 ------------------------------------

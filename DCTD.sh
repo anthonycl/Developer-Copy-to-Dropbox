@@ -132,13 +132,13 @@ function makelink {
 	to=$1
 	from=$2
 
-	if [ ! -e "$from" ]; then
+	if [ ! -e "$from" ] && [ ! -h "$from" ]; then
 	    ln -s "$to" "$from"
 	    /usr/local/bin/chmod -ha +a "everyone deny delete" "$from"
 
 	    echo "L++ $to to $from"
 	else
-		echo "!! $from already exist.";
+		echo "!! $from already exist or is symlink, skipping.";
 	fi
 	
 	return 1;
@@ -147,10 +147,10 @@ function makelink {
 function removefile {
 	from=$1
 
-	if [ -e "$from" ]; then
-	    rm -rf "$from"
-	    echo "-- $from";
-	fi
+    if [ -e "$from" ]; then
+        rm -rf "$from"
+        echo "-- $from";
+    fi
 	
 	return 1;
 }
@@ -161,7 +161,7 @@ function movefile {
 	linkback=$3
 	first_time=$4
 
-	if [ "$first_time" == "Y" ];
+	if [ "$FIRSTTIME" == "Y" ];
 	then
 		if [ ! -h "$from" ];
 		then
@@ -205,24 +205,22 @@ function movefile {
 }
 
 function first_time_check {
-	this_app=$1
-
 	echo $txtwarn; ## Set text to warning
-	echo "WARNING!!!"; ## Warning and Enable Blink
+    echo "WARNING!!! MOVE FORWARD AT YOUR OWN RISK!"; ## Warning
 	newline
-	echo "Y) First Time Mode: If this is the first time you are running DCTD for ${this_app} on this computer your files will be moved to Dropbox, deleting anything in your Dropbox's DCTD directory, then symbolic links will be created."
+	echo "Y) First Time Mode: If this is the first time you are running DCTD on this computer your files will be moved to Dropbox, deleting anything in your Dropbox's DCTD directory, then symbolic links will be created."
 	newline
-	echo "N) Restore/Sync Mode: If this is not your first time, we will remove your files on this machine and restore your symbolic links. This option should also be used on other machines you want to connect with Dropbox sync, after you have already used DCTD to sync your main machine..";
+	echo "N) Restore/Sync Mode: If this is not your first time, we will remove your files on this machine and restore your symbolic links. This option should be used on other machines you want to connect with Dropbox sync, after you have already used DCTD to sync your main machine.";
 	newline
-	
 	echo $txtreset; ## Reset text back to normal.
-	if askyn "Proceed in first time mode?"; ## Ask question to proceed.
+	
+    if askyn "Proceed in first time mode?"; ## Ask question to proceed.
 	then
 		echo "- Entering First Time Mode";
-		first_time="Y";
+		FIRSTTIME="Y";
 	else
 		echo "- Entering Restore/Sync Mode";
-		first_time="N";
+		FIRSTTIME="N";
 	fi
 	
 	echo "... Please Wait as we process your move request."
@@ -234,20 +232,19 @@ function first_time_check {
 function move_coda {
 	## Coda Copy
 	echo "- Coda Move to Dropbox -- Start";
-	first_time_check "Coda";
 	killall "Coda" ## Kill app before processing
 
 	## remove files
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/com.panic.Coda.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/com.panic.LSSharedFileList.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Coda";
-	[ "$first_time" == "N" ] && removefile "/Applications/Coda.app";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.panic.Coda.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.panic.Coda.LSSharedFileList.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Coda";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Coda.app";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/com.panic.Coda.plist" "${dropbox_dir}Library/Preferences/com.panic.Coda.plist" Y $first_time;
-	movefile "${user_dir}Library/Preferences/com.panic.LSSharedFileList.plist" "${dropbox_dir}Library/Preferences/com.panic.LSSharedFileList.plist" Y $first_time;
-	movefile "${user_dir}Library/Application Support/Coda" "${dropbox_dir}Library/Application Support/Coda" Y $first_time;
-	movefile "/Applications/Coda.app" "${dropbox_dir}Applications/Coda.app" Y $first_time;
+	movefile "${user_dir}Library/Preferences/com.panic.Coda.plist" "${dropbox_dir}Library/Preferences/com.panic.Coda.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/com.panic.Coda.LSSharedFileList.plist" "${dropbox_dir}Library/Preferences/com.panic.Coda.LSSharedFileList.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Application Support/Coda" "${dropbox_dir}Library/Application Support/Coda" Y $FIRSTTIME;
+	movefile "/Applications/Coda.app" "${dropbox_dir}Applications/Coda.app" Y $FIRSTTIME;
 
 	echo "- Coda Move to Dropbox -- Complete";
 	return 1;
@@ -256,18 +253,17 @@ function move_coda {
 function move_tower {
 	## Tower Copy
 	echo "- Tower Move to Dropbox -- Start";
-	first_time_check "Tower";
 	killall "Tower" ## Kill app before processing
 
 	## remove files
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/com.fournova.Tower.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Tower";
-	[ "$first_time" == "N" ] && removefile "/Applications/Tower.app";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.fournova.Tower.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Tower";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Tower.app";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/com.fournova.Tower.plist" "${dropbox_dir}Library/Preferences/com.fournova.Tower.plist" Y $first_time;
-	movefile "${user_dir}Library/Application Support/Tower" "${dropbox_dir}Library/Application Support/Tower" Y $first_time;
-	movefile "/Applications/Tower.app" "${dropbox_dir}Applications/Tower.app" Y $first_time;
+	movefile "${user_dir}Library/Preferences/com.fournova.Tower.plist" "${dropbox_dir}Library/Preferences/com.fournova.Tower.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Application Support/Tower" "${dropbox_dir}Library/Application Support/Tower" Y $FIRSTTIME;
+	movefile "/Applications/Tower.app" "${dropbox_dir}Applications/Tower.app" Y $FIRSTTIME;
 
 	echo "If your git repositories are in your sites/htdocs directory when you move MAMP, be sure to update them in Tower on the update repository screen."
 	echo "- Tower Move to Dropbox -- Complete";
@@ -277,16 +273,15 @@ function move_tower {
 function move_filezilla {
 	## Filezilla Copy
 	echo "- Filezilla Move to Dropbox -- Start";
-	first_time_check "Filezilla";
 	killall "filezilla" ## Kill app before processing
 
 	## remove files
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/de.filezilla.plist";
-	[ "$first_time" == "N" ] && removefile "/Applications/Filezilla.app";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/de.filezilla.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Filezilla.app";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/de.filezilla.plist" "${dropbox_dir}Library/Preferences/de.filezilla.plist" Y $first_time;
-	movefile "/Applications/Filezilla.app" "${dropbox_dir}Applications/Filezilla.app" Y $first_time;
+	movefile "${user_dir}Library/Preferences/de.filezilla.plist" "${dropbox_dir}Library/Preferences/de.filezilla.plist" Y $FIRSTTIME;
+	movefile "/Applications/Filezilla.app" "${dropbox_dir}Applications/Filezilla.app" Y $FIRSTTIME;
 
 	echo "- Filezilla Move to Dropbox -- Complete";
 	return 1;
@@ -295,20 +290,19 @@ function move_filezilla {
 function move_sequelpro {
 	## Sequel Pro Copy
 	echo "- Sequel Pro Move to Dropbox -- Start";
-	first_time_check "Sequel Pro";
 	killall "Sequel Pro" ## Kill app before processing
 
 	## remove files
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.LSSharedFileList.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Sequel Pro";
-	[ "$first_time" == "N" ] && removefile "/Applications/Sequel Pro.app";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.LSSharedFileList.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Sequel Pro";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Sequel Pro.app";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.plist" "${dropbox_dir}Library/Preferences/com.google.code.sequel-pro.plist" Y $first_time;
-	movefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.LSSharedFileList.plist" "${dropbox_dir}Library/Preferences/com.google.code.sequel-pro.LSSharedFileList.plist" Y $first_time;
-	movefile "${user_dir}Library/Application Support/Sequel Pro" "${dropbox_dir}Library/Application Support/Sequel Pro" Y $first_time;
-	movefile "/Applications/Sequel Pro.app" "${dropbox_dir}Applications/Sequel Pro.app" Y $first_time;
+	movefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.plist" "${dropbox_dir}Library/Preferences/com.google.code.sequel-pro.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.LSSharedFileList.plist" "${dropbox_dir}Library/Preferences/com.google.code.sequel-pro.LSSharedFileList.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Application Support/Sequel Pro" "${dropbox_dir}Library/Application Support/Sequel Pro" Y $FIRSTTIME;
+	movefile "/Applications/Sequel Pro.app" "${dropbox_dir}Applications/Sequel Pro.app" Y $FIRSTTIME;
 
 	echo "- Sequel Pro Move to Dropbox -- Complete";
 	return 1;
@@ -317,13 +311,12 @@ function move_sequelpro {
 function move_mamp {
 	## MAMP/MAMP Pro Copy
 	echo "- MAMP/MAMP Pro Move to Dropbox -- Start";
-	first_time_check "MAMP/MAMP Pro";
 	find_version "/Applications" "MAMP PRO *";
 	killall "MAMP" ## Kill app before processing
 	killall "MAMP PRO" ## Kill app before processing
 
 	## modify mysql config
-	if [ "$first_time" == "Y" ]; then
+	if [ "$FIRSTTIME" == "Y" ]; then
 		## modify backup
 		cd "${user_dir}Library/Application Support/appsolute/MAMP PRO/templates/"
 		cp -pPR "my.cnf.temp" "my.cnf.temp.backup";
@@ -336,22 +329,22 @@ function move_mamp {
 	fi
 
 	## remove files
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/de.appsolute.MAMP.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/de.appsolute.mamppro.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/de.living-e_to_appsolute.mampro.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/appsolute";
-	[ "$first_time" == "N" ] && removefile "/Library/Application Support/appsolute";
-	[ "$first_time" == "N" ] && removefile "/Applications/MAMP";
-	[ "$first_time" == "N" ] && removefile "/Applications/${APPVERSION}";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/de.appsolute.MAMP.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/de.appsolute.mamppro.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/de.living-e_to_appsolute.mampro.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/appsolute";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Library/Application Support/appsolute";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/MAMP";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/${APPVERSION}";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/de.appsolute.MAMP.plist" "${dropbox_dir}Library/Preferences/de.appsolute.MAMP.plist" Y $first_time;
-	movefile "${user_dir}Library/Preferences/de.appsolute.mamppro.plist" "${dropbox_dir}Library/Preferences/de.appsolute.mamppro.plist" Y $first_time;
-	movefile "${user_dir}Library/Preferences/de.living-e_to_appsolute.mampro.plist" "${dropbox_dir}Library/Preferences/de.living-e_to_appsolute.mampro.plist" Y $first_time;
-	movefile "${user_dir}Library/Application Support/appsolute" "${dropbox_dir}Library/Application Support/MAMP" Y $first_time;
-	movefile "/Library/Application Support/appsolute" "${dropbox_dir}Library/Application Support/MAMP PRO" Y $first_time;
-	movefile "/Applications/${APPVERSION}" "${dropbox_dir}Applications/${APPVERSION}" Y $first_time;
-	movefile "/Applications/MAMP" "${dropbox_dir}Applications/MAMP" Y $first_time;
+	movefile "${user_dir}Library/Preferences/de.appsolute.MAMP.plist" "${dropbox_dir}Library/Preferences/de.appsolute.MAMP.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/de.appsolute.mamppro.plist" "${dropbox_dir}Library/Preferences/de.appsolute.mamppro.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/de.living-e_to_appsolute.mampro.plist" "${dropbox_dir}Library/Preferences/de.living-e_to_appsolute.mampro.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Application Support/appsolute" "${dropbox_dir}Library/Application Support/MAMP" Y $FIRSTTIME;
+	movefile "/Library/Application Support/appsolute" "${dropbox_dir}Library/Application Support/MAMP PRO" Y $FIRSTTIME;
+	movefile "/Applications/${APPVERSION}" "${dropbox_dir}Applications/${APPVERSION}" Y $FIRSTTIME;
+	movefile "/Applications/MAMP" "${dropbox_dir}Applications/MAMP" Y $FIRSTTIME;
 
 	echo "- MAMP/MAMP Pro Move to Dropbox -- Complete";
 	return 1;
@@ -360,25 +353,24 @@ function move_mamp {
 function move_linkinus {
 	## Linkinus Copy
 	echo "- Linkinus Move to Dropbox -- Start";
-	first_time_check "Linkinus";
 	killall "Linkinus" ## Kill app before processing
 	killall "Linkinus Agent" ## Kill app before processing
 
 	## remove files
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.Linkinus.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.Linkinus.SysInfoPlugInPane.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.LinkinusAgent.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.LinkinusSysInfoPlugIn.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Linkinus 2";
-	[ "$first_time" == "N" ] && removefile "/Applications/Linkinus.app";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.Linkinus.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.Linkinus.SysInfoPlugInPane.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.LinkinusAgent.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.LinkinusSysInfoPlugIn.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Linkinus 2";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Linkinus.app";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/net.conceited.Linkinus.plist" "${dropbox_dir}Library/Preferences/net.conceited.Linkinus.plist" Y $first_time;
-	movefile "${user_dir}Library/Preferences/net.conceited.Linkinus.SysInfoPlugInPane.plist" "${dropbox_dir}Library/Preferences/net.conceited.Linkinus.SysInfoPlugInPane.plist" Y $first_time;
-	movefile "${user_dir}Library/Preferences/net.conceited.LinkinusAgent.plist" "${dropbox_dir}Library/Preferences/net.conceited.LinkinusAgent.plist" Y $first_time;
-	movefile "${user_dir}Library/Preferences/net.conceited.LinkinusSysInfoPlugIn.plist" "${dropbox_dir}Library/Preferences/net.conceited.LinkinusSysInfoPlugIn.plist" Y $first_time;
-	movefile "${user_dir}Library/Application Support/Linkinus 2" "${dropbox_dir}Library/Application Support/Linkinus 2" Y $first_time;
-	movefile "/Applications/Linkinus.app" "${dropbox_dir}Applications/Linkinus.app" Y $first_time;
+	movefile "${user_dir}Library/Preferences/net.conceited.Linkinus.plist" "${dropbox_dir}Library/Preferences/net.conceited.Linkinus.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/net.conceited.Linkinus.SysInfoPlugInPane.plist" "${dropbox_dir}Library/Preferences/net.conceited.Linkinus.SysInfoPlugInPane.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/net.conceited.LinkinusAgent.plist" "${dropbox_dir}Library/Preferences/net.conceited.LinkinusAgent.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/net.conceited.LinkinusSysInfoPlugIn.plist" "${dropbox_dir}Library/Preferences/net.conceited.LinkinusSysInfoPlugIn.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Application Support/Linkinus 2" "${dropbox_dir}Library/Application Support/Linkinus 2" Y $FIRSTTIME;
+	movefile "/Applications/Linkinus.app" "${dropbox_dir}Applications/Linkinus.app" Y $FIRSTTIME;
 
 	echo "- Linkinus Move to Dropbox -- Complete";
 	return 1;
@@ -387,18 +379,17 @@ function move_linkinus {
 function move_firefox {
 	## Firefox Copy
 	echo "- Firefox Move to Dropbox -- Start";
-	first_time_check "Firefox";
 	killall "firefox" ## Kill app before processing
 
 	## remove files
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/org.mozilla.firefox.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Firefox";
-	[ "$first_time" == "N" ] && removefile "/Applications/Firefox.app";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/org.mozilla.firefox.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Firefox";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Firefox.app";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/org.mozilla.firefox.plist" "${dropbox_dir}Library/Preferences/org.mozilla.firefox.plist" Y $first_time;
-	movefile "${user_dir}Library/Application Support/Firefox" "${dropbox_dir}Library/Application Support/Firefox" Y $first_time;
-	movefile "/Applications/Firefox.app" "${dropbox_dir}Applications/Firefox.app" Y $first_time;
+	movefile "${user_dir}Library/Preferences/org.mozilla.firefox.plist" "${dropbox_dir}Library/Preferences/org.mozilla.firefox.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Application Support/Firefox" "${dropbox_dir}Library/Application Support/Firefox" Y $FIRSTTIME;
+	movefile "/Applications/Firefox.app" "${dropbox_dir}Applications/Firefox.app" Y $FIRSTTIME;
 
 	echo "- Firefox Move to Dropbox -- Complete";
 	return 1;
@@ -407,18 +398,17 @@ function move_firefox {
 function move_chrome {
 	## Google Chrome Copy
 	echo "- Google Chrome Move to Dropbox -- Start";
-	first_time_check "Google Chrome";
 	killall "Google Chrome" ## Kill app before processing
 
 	## remove files
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.Chrome.plist";
-	[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Google";
-	[ "$first_time" == "N" ] && removefile "/Applications/Google Chrome.app";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.Chrome.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Google/Chrome";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Google Chrome.app";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/com.google.Chrome.plist" "${dropbox_dir}Library/Preferences/com.google.Chrome.plist" Y $first_time;
-	movefile "${user_dir}Library/Application Support/Google/Chrome" "${dropbox_dir}Library/Application Support/Google/Chrome" Y $first_time;
-	movefile "/Applications/Google Chrome.app" "${dropbox_dir}Applications/Google Chrome.app" Y $first_time;
+	movefile "${user_dir}Library/Preferences/com.google.Chrome.plist" "${dropbox_dir}Library/Preferences/com.google.Chrome.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Application Support/Google/Chrome" "${dropbox_dir}Library/Application Support/Google/Chrome" Y $FIRSTTIME;
+	movefile "/Applications/Google Chrome.app" "${dropbox_dir}Applications/Google Chrome.app" Y $FIRSTTIME;
 
 	echo "- Firefox Move to Dropbox -- Complete";
 	return 1;
@@ -427,38 +417,25 @@ function move_chrome {
 function move_growl {
 	## Growl (Ticket Preferences) Copy
 	echo "- Growl (Ticket Preferences) Move to Dropbox -- Start";
-	first_time_check "Growl (Ticket Preferences)";
 
 	makedir "${dropbox_dir}Library/Application Support/Growl"
 	makedir "${dropbox_dir}Library/Application Support/Growl/Tickets"
 
 	## Coda Growl
-	askyn "Do you want to move Coda's Growl Ticket Prefences?" Y;
-	if [ "$REPLYYN" == "Y" ]; then
-		[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Growl/Tickets/Coda.growlTicket";
-		movefile "${user_dir}Library/Application Support/Growl/Tickets/Coda.growlTicket" "${dropbox_dir}Library/Application Support/Growl/Tickets/Coda.growlTicket" Y $first_time;
-	fi
+    [ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Growl/Tickets/Coda.growlTicket";
+    movefile "${user_dir}Library/Application Support/Growl/Tickets/Coda.growlTicket" "${dropbox_dir}Library/Application Support/Growl/Tickets/Coda.growlTicket" Y $FIRSTTIME;
 
 	## Firefox Growl
-	askyn "Do you want to move Firefox's Growl Ticket Prefences?" Y;
-	if [ "$REPLYYN" == "Y" ]; then
-		[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Growl/Tickets/Firefox.growlTicket";
-		movefile "${user_dir}Library/Application Support/Growl/Tickets/Firefox.growlTicket" "${dropbox_dir}Library/Application Support/Growl/Tickets/Firefox.growlTicket" Y $first_time;
-	fi
+		[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Growl/Tickets/Firefox.growlTicket";
+		movefile "${user_dir}Library/Application Support/Growl/Tickets/Firefox.growlTicket" "${dropbox_dir}Library/Application Support/Growl/Tickets/Firefox.growlTicket" Y $FIRSTTIME;
 
 	## Linkinus Growl
-	askyn "Do you want to move Linkinus's Growl Ticket Prefences?" Y;
-	if [ "$REPLYYN" == "Y" ]; then
-		[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Growl/Tickets/Linkinus.growlTicket";
-		movefile "${user_dir}Library/Application Support/Growl/Tickets/Linkinus.growlTicket" "${dropbox_dir}Library/Application Support/Growl/Tickets/Linkinus.growlTicket" Y $first_time;
-	fi
+    [ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Growl/Tickets/Linkinus.growlTicket";
+    movefile "${user_dir}Library/Application Support/Growl/Tickets/Linkinus.growlTicket" "${dropbox_dir}Library/Application Support/Growl/Tickets/Linkinus.growlTicket" Y $FIRSTTIME;
 
 	## Sequel Pro Growl
-	askyn "Do you want to move Sequel Pro's Growl Ticket Prefences?" Y;
-	if [ "$REPLYYN" == "Y" ]; then
-		[ "$first_time" == "N" ] && removefile "${user_dir}Library/Application Support/Growl/Tickets/Sequel Pro.growlTicket";
-		movefile "${user_dir}Library/Application Support/Growl/Tickets/Sequel Pro.growlTicket" "${dropbox_dir}Library/Application Support/Growl/Tickets/Sequel Pro.growlTicket" Y $first_time;
-	fi
+    [ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Growl/Tickets/Sequel Pro.growlTicket";
+    movefile "${user_dir}Library/Application Support/Growl/Tickets/Sequel Pro.growlTicket" "${dropbox_dir}Library/Application Support/Growl/Tickets/Sequel Pro.growlTicket" Y $FIRSTTIME;
 
 	echo "- Growl (Ticket Preferences) Move to Dropbox -- Complete";
 	return 1;
@@ -472,59 +449,21 @@ clear
 if $check_run_as_root; then
 	if [[ $EUID -ne 0 ]]; then
 		echo $txtwarn; ## Set text to warning
-		echo "DCTD must be run as root or sudo." 1>&2
+		echo "DCTD must be run as root or sudo."
 		echo $txtreset; ## Reset text
 		exit 1
 	fi
 fi
 
-echo $txtinfo; ## Set text to info
-# Check for ACL Compatible Chmod -- Start
-if [ ! -e "/usr/local/bin/chmod" ]
-then
-	echo "In order to move forward you must have a ACL compatible chmod, I can do this for you and place the new one in /usr/local/bin/. Don't worry this will not touch your current chmod in /bin/chmod. This is required to move forward.";
-	newline
-	if ! askyn "Do you want to proceed?"; ## Ask question to proceed.
-	then
-		exit;
-	fi
-
-	## If no exit, keep on!
-	chmod_url="http://opensource.apple.com/source/file_cmds/file_cmds-202.2/chmod/" ## Directory to get the chmod. This should never change.
-	chmod_temp_dir="/usr/local/bin/chmodcomp"										## Directory to temp compile chmod
-	mkdir "${chmod_temp_dir}"
-	cp "./chmod.patch" "${chmod_temp_dir}"
-	cd "${chmod_temp_dir}"
-	
-	## Download it
-	wget --output-document=Makefile "${chmod_url}Makefile?txt"
-	wget --output-document=chmod.1 "${chmod_url}chmod.1?txt"
-	wget --output-document=chmod.c "${chmod_url}chmod.c?txt"
-	wget --output-document=chmod_acl.c "${chmod_url}chmod_acl.c?txt"
-	wget --output-document=chmod_acl.h "${chmod_url}chmod_acl.h?txt"
-
-	## Patch it
-	patch -p1 -i chmod.patch
-
-	## Compile it
-	make
-	make install
-	
-	## Put it in its place
-	mv /tmp/chmod/Release//usr/local/bin/chmod /usr/local/bin/chmod
-
-	rm -rf "${chmod_temp_dir}"
-	
-	clear
-	echo "√ - ACL Compatible Chmod Installed"
-else
-	echo "√ - ACL Compatible Chmod Found"
+if [ ! -d "/Developer" ]; then
+    echo $txtwarn; ## Set text to warning
+    echo "DCTD requires Xcode to be installed. You can download it from here: http://itunes.apple.com/us/app/xcode/id448457090"
+    echo $txtreset; ## Reset text
+    exit 1
 fi
 
-# Check for ACL Compatible Chmod -- End
-
 ## Welcome Text
-echo "Hello! My name is Siri and I am here to help move your applications, preferences, sites to Dropbox. I am only compatible with Mac OS X 10.6 or later, please exit now if that is not you. You must have the applications you want me to help you move already installed AND working on this machine. Right now I support the following Applications: ";
+echo "Hello! My name is Siri and I am here to help move your applications, preferences, and sites to Dropbox. I am only compatible with Mac OS X 10.6 or later, please exit now if that is not you. Right now I support the following Applications: ";
 
 echo $txtreset; ## Reset text
 
@@ -535,14 +474,80 @@ do
 done
 
 echo $txtwarn; ## Set text to warning
-echo "WARNING!!! MOVE FORWARD AT YOUR OWN RISK!"; ## Warning and Enable Blink
-echo "Moving forward could create, modify, and or delete certain application or preferences. You are at your own risk! The applications you decide to process with DCDT will be forcibly shut down, please make sure to save first before continuing.";
+echo "WARNING!!! MOVE FORWARD AT YOUR OWN RISK!"; ## Warning
+newline
+echo "Moving forward could create, modify, and or delete certain applications, preferences, and sites. You are at your own risk! The applications you decide to process with DCDT will be forcibly shut down, please make sure to save first before continuing.";
+newline
+echo "DCDT will also check for an ACL compatible chmod, Homebrew, and Wget. If any of these checks fail, we will try to fix them, this process should not affect your system.";
 
 echo $txtreset; ## Reset text back to normal.
 if ! askyn "Are you sure you want to proceed?"; ## Ask question to proceed.
 then
 	exit;
 fi
+
+clear
+
+# Check for ACL Compatible Chmod -- Start
+if [ ! -e "/usr/local/bin/chmod" ]
+then
+    chmod_url="http://opensource.apple.com/source/file_cmds/file_cmds-202.2/chmod/" ## Directory to get the chmod. This should never change.
+    chmod_temp_dir="/usr/local/bin/chmodcomp"										## Directory to temp compile chmod
+    mkdir "${chmod_temp_dir}"
+    cp "./chmod.patch" "${chmod_temp_dir}"
+    cd "${chmod_temp_dir}"
+
+    ## Download it
+    wget --output-document=Makefile "${chmod_url}Makefile?txt"
+    wget --output-document=chmod.1 "${chmod_url}chmod.1?txt"
+    wget --output-document=chmod.c "${chmod_url}chmod.c?txt"
+    wget --output-document=chmod_acl.c "${chmod_url}chmod_acl.c?txt"
+    wget --output-document=chmod_acl.h "${chmod_url}chmod_acl.h?txt"
+
+    ## Patch it
+    patch -p1 -i chmod.patch
+
+    ## Compile it
+    make
+    make install
+
+    ## Put it in its place
+    mv /tmp/chmod/Release//usr/local/bin/chmod /usr/local/bin/chmod
+
+    rm -rf "${chmod_temp_dir}"
+
+    clear
+    echo "√ - ACL Compatible Chmod Installed"
+else
+    echo "√ - ACL Compatible Chmod Found"
+fi
+# Check for ACL Compatible Chmod -- End
+
+# Check for Homebrew -- Start
+if [ ! -e "/usr/local/bin/brew" ]
+then
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.github.com/gist/323731)"
+
+    clear
+    echo "√ - Homebrew Installed"
+else
+    echo "√ - Homebrew Found"
+fi
+# Check for Homebrew -- End
+
+# Check for Wget -- Start
+if [ ! -e "/usr/local/bin/wget" ]
+then
+    brew install wget
+
+    clear
+    echo "√ - Wget Installed"
+else
+    echo "√ - Wget Found"
+fi
+# Check for Wget -- End
+
+first_time_check ## check if its their first time
 
 clear
 
@@ -553,21 +558,24 @@ running_user=$REPLY
 
 newline
 
-dropbox_dir="/Users/${running_user}/Dropbox/DCTD/";	## Dropbox location, with trailing slash
-ask "Where is your Dropbox directory?" $dropbox_dir;
+echo $txtwarn;
+echo "We strongly suggest moving your Dropbox to a general folder, not based on your username. This is easily accomplished by changing your Dropbox preferences in the menu bar. This is recommended, unless you use the same username across all computers you access for development and always will in the future.";
+echo $txtreset;
+dropbox_dir="/Applications/Dropbox/DCTD/";	## Dropbox location, with trailing slash
+ask "What is your Dropbox DCTD directory path? (Will be Created, If Does Not Exist)" $dropbox_dir;
 dropbox_dir=$REPLY
 
 user_dir="/Users/${running_user}/";				## Library location, with trailing slash
 
 newline
 
-askyn "Do you want to make backups?" $make_backups;
+askyn "Do you want to make backups, when possible?" $make_backups;
 make_backups=$REPLYYN
 
-clear
+newline
 
 # Move Sites - Start
-askyn "Do you want to move your sites over to Dropbox?";
+askyn "Do you want to move your sites over to Dropbox?" $FIRSTTIME;
 if [ "$REPLYYN" == "Y" ]; then
 	makedir "${dropbox_dir}Sites"
 	sites_dir="${user_dir}Sites";	## Sites/htdocs location
@@ -607,6 +615,14 @@ makedir "${dropbox_dir}Applications"
 while true; do
 	
 	newline
+
+echo "
+Key While Processing:
+!! Possible Error or Notice
+-- Remove
+-+ Moved
+++L Created Symlink
+";
 
 	index=1;
 	for i in "${apps[@]}"
@@ -657,14 +673,18 @@ while true; do
 			move_firefox
 			move_chrome
 			move_growl
+
+            echo "√ - We suggest looking back through the above log and make sure everything was done correctly.";
 			;;
 		11)
-			clear
+            newline
+
 			echo "You chose to exit. Thanks, Goodbye!"
 			break
 			;;
 		*)
-			clear
+            newline
+
 			echo "You must choose a valid numeric option."
 			;;
 	esac

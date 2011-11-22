@@ -147,7 +147,7 @@ function makelink {
 function removefile {
 	from=$1
 
-    if [ -e "$from" ]; then
+    if [ -e "$from" ] || [ -h "$from" ] || [ -d "$from" ]; then
         rm -rf "$from"
         echo "-- $from";
     fi

@@ -148,7 +148,7 @@ function removefile {
 	from=$1
 
     if [ -e "$from" ] || [ -h "$from" ] || [ -d "$from" ]; then
-        rm -rf "$from"
+        rm -Rrf "$from"
         echo "-- $from";
     fi
 	
@@ -257,7 +257,7 @@ function move_tower {
 
 	## remove files
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.fournova.Tower.plist";
-	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Tower";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Tower/";
 	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Tower.app";
 	
 	## move files
@@ -295,7 +295,7 @@ function move_sequelpro {
 	## remove files
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.plist";
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.code.sequel-pro.LSSharedFileList.plist";
-	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Sequel Pro";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Sequel Pro/";
 	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Sequel Pro.app";
 	
 	## move files
@@ -332,9 +332,9 @@ function move_mamp {
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/de.appsolute.MAMP.plist";
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/de.appsolute.mamppro.plist";
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/de.living-e_to_appsolute.mampro.plist";
-	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/appsolute";
-	[ "$FIRSTTIME" == "N" ] && removefile "/Library/Application Support/appsolute";
-	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/MAMP";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/appsolute/";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Library/Application Support/appsolute/";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/MAMP/";
 	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/${APPVERSION}";
 	
 	## move files
@@ -361,7 +361,7 @@ function move_linkinus {
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.Linkinus.SysInfoPlugInPane.plist";
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.LinkinusAgent.plist";
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/net.conceited.LinkinusSysInfoPlugIn.plist";
-	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Linkinus 2";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Linkinus 2/";
 	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Linkinus.app";
 	
 	## move files
@@ -383,7 +383,7 @@ function move_firefox {
 
 	## remove files
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/org.mozilla.firefox.plist";
-	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Firefox";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Firefox/";
 	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Firefox.app";
 	
 	## move files
@@ -402,7 +402,7 @@ function move_chrome {
 
 	## remove files
 	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.google.Chrome.plist";
-	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Google/Chrome";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Google/Chrome/";
 	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Google Chrome.app";
 	
 	## move files
@@ -561,9 +561,10 @@ newline
 echo $txtwarn;
 echo "We strongly suggest moving your Dropbox to a general folder, not based on your username. This is easily accomplished by changing your Dropbox preferences in the menu bar. This is recommended, unless you use the same username across all computers you access for development and always will in the future.";
 echo $txtreset;
-dropbox_dir="/Applications/Dropbox/DCTD/";	## Dropbox location, with trailing slash
-ask "What is your Dropbox DCTD directory path? (Will be Created, If Does Not Exist)" $dropbox_dir;
-dropbox_dir=$REPLY
+application_dir="/Applications/Dropbox/";	## Dropbox location, with trailing slash
+ask "What is your Dropbox directory path? (With Trailing Slash)" $application_dir;
+application_dir=$REPLY
+dropbox_dir="${application_dir}DCTD/"
 
 user_dir="/Users/${running_user}/";				## Library location, with trailing slash
 
@@ -603,6 +604,7 @@ fi
 # Move Sites - End
 
 ## Create folders in Dropbox Dir ( If Not Already )
+chmod 755 "${application_dir}"
 chmod 755 "${dropbox_dir}"
 makedir "${dropbox_dir}"
 makedir "${dropbox_dir}Library"

@@ -29,7 +29,7 @@ make_backups="Y"; 											## ** Make backups before moving [Y/N]
 ## -- DO NOT MODIFY BELOW THIS LINE, UNLESS YOU KNOW WHAT YOU ARE DOING --
 
 # Supported Applications
-declare -a apps=('Coda' 'Tower' 'FileZilla' 'Sequel Pro' 'MAMP/MAMP Pro' 'Linkinus' 'Firefox' 'Google Chrome' 'Growl (Ticket Preferences)');
+declare -a apps=('Coda' 'SourceTree' 'FileZilla' 'Sequel Pro' 'MAMP/MAMP Pro' 'Linkinus' 'Firefox' 'Google Chrome' 'Growl (Ticket Preferences)');
 
 # Text color variables
 txtinfo=$(tput bold; tput setaf 4);
@@ -250,23 +250,25 @@ function move_coda {
 	return 1;
 }
 
-function move_tower {
-	## Tower Copy
-	echo "- Tower Move to Dropbox -- Start";
-	killall "Tower" ## Kill app before processing
+function move_sourcetree {
+	## SourceTree Copy
+	echo "- SourceTree Move to Dropbox -- Start";
+	killall "SourceTree" ## Kill app before processing
 
 	## remove files
-	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.fournova.Tower.plist";
-	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/Tower/";
-	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/Tower.app";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.torusknot.SourceTree.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Preferences/com.torusknot.SourceTree.LSSharedFileList.plist";
+	[ "$FIRSTTIME" == "N" ] && removefile "${user_dir}Library/Application Support/SourceTree/";
+	[ "$FIRSTTIME" == "N" ] && removefile "/Applications/SourceTree.app";
 	
 	## move files
-	movefile "${user_dir}Library/Preferences/com.fournova.Tower.plist" "${dropbox_dir}Library/Preferences/com.fournova.Tower.plist" Y $FIRSTTIME;
-	movefile "${user_dir}Library/Application Support/Tower" "${dropbox_dir}Library/Application Support/Tower" Y $FIRSTTIME;
-	movefile "/Applications/Tower.app" "${dropbox_dir}Applications/Tower.app" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/com.torusknot.SourceTree.plist" "${dropbox_dir}Library/Preferences/com.torusknot.SourceTree.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Preferences/com.torusknot.SourceTree.LSSharedFileList.plist" "${dropbox_dir}Library/Preferences/com.torusknot.SourceTree.LSSharedFileList.plist" Y $FIRSTTIME;
+	movefile "${user_dir}Library/Application Support/SourceTree" "${dropbox_dir}Library/Application Support/SourceTree" Y $FIRSTTIME;
+	movefile "/Applications/SourceTree.app" "${dropbox_dir}Applications/SourceTree.app" Y $FIRSTTIME;
 
-	echo "If your git repositories are in your sites/htdocs directory when you move MAMP, be sure to update them in Tower on the update repository screen."
-	echo "- Tower Move to Dropbox -- Complete";
+	echo "If your git repositories are in your sites/htdocs directory when you move MAMP, be sure to update them in SourceTree on the repository screen."
+	echo "- SourceTree Move to Dropbox -- Complete";
 	return 1;
 }
 
@@ -613,7 +615,7 @@ makedir "${dropbox_dir}Library/Application Support"
 makedir "${dropbox_dir}Applications"
 
 ## Loop Through Supported Apps
-## ('Coda' 'Tower' 'FileZilla' 'Sequel Pro' 'MAMP/MAMP Pro' 'Linkinus' 'Firefox' 'Google Chrome' 'Growl (Ticket Preferences)')
+## ('Coda' 'SourceTree' 'FileZilla' 'Sequel Pro' 'MAMP/MAMP Pro' 'Linkinus' 'Firefox' 'Google Chrome' 'Growl (Ticket Preferences)')
 while true; do
 	
 	newline
@@ -642,7 +644,7 @@ Key While Processing:
 			move_coda
 			;;
 		2)
-			move_tower
+			move_sourcetree
 			;;
 		3)
 			move_filezilla
@@ -667,7 +669,7 @@ Key While Processing:
 			;;
 		10)
 			move_coda
-			move_tower
+			move_sourcetree
 			move_filezilla
 			move_sequelpro
 			move_mamp

@@ -495,7 +495,6 @@ if [ ! -e "/usr/local/bin/brew" ]
 then
     /usr/bin/ruby -e "$(curl -fsSL https://raw.github.com/gist/323731)"
 
-    clear
     echo "√ - Homebrew Installed"
 else
     echo "√ - Homebrew Found"
@@ -507,7 +506,6 @@ if [ ! -e "/usr/local/bin/wget" ]
 then
     brew install wget
 
-    clear
     echo "√ - Wget Installed"
 else
     echo "√ - Wget Found"
@@ -524,11 +522,11 @@ then
     cd "${chmod_temp_dir}"
 
     ## Download it
-    wget --output-document=Makefile "${chmod_url}Makefile?txt"
-    wget --output-document=chmod.1 "${chmod_url}chmod.1?txt"
-    wget --output-document=chmod.c "${chmod_url}chmod.c?txt"
-    wget --output-document=chmod_acl.c "${chmod_url}chmod_acl.c?txt"
-    wget --output-document=chmod_acl.h "${chmod_url}chmod_acl.h?txt"
+    /usr/local/bin/wget --output-document=Makefile "${chmod_url}Makefile?txt"
+    /usr/local/bin/wget --output-document=chmod.1 "${chmod_url}chmod.1?txt"
+    /usr/local/bin/wget --output-document=chmod.c "${chmod_url}chmod.c?txt"
+    /usr/local/bin/wget --output-document=chmod_acl.c "${chmod_url}chmod_acl.c?txt"
+    /usr/local/bin/wget --output-document=chmod_acl.h "${chmod_url}chmod_acl.h?txt"
 
     ## Patch it
     patch -p1 -i chmod.patch
@@ -542,7 +540,6 @@ then
 
     rm -rf "${chmod_temp_dir}"
 
-    clear
     echo "√ - ACL Compatible Chmod Installed"
 else
     echo "√ - ACL Compatible Chmod Found"

@@ -490,6 +490,30 @@ fi
 
 clear
 
+# Check for Homebrew -- Start
+if [ ! -e "/usr/local/bin/brew" ]
+then
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.github.com/gist/323731)"
+
+    clear
+    echo "√ - Homebrew Installed"
+else
+    echo "√ - Homebrew Found"
+fi
+# Check for Homebrew -- End
+
+# Check for Wget -- Start
+if [ ! -e "/usr/local/bin/wget" ]
+then
+    brew install wget
+
+    clear
+    echo "√ - Wget Installed"
+else
+    echo "√ - Wget Found"
+fi
+# Check for Wget -- End
+
 # Check for ACL Compatible Chmod -- Start
 if [ ! -e "/usr/local/bin/chmod" ]
 then
@@ -524,30 +548,6 @@ else
     echo "√ - ACL Compatible Chmod Found"
 fi
 # Check for ACL Compatible Chmod -- End
-
-# Check for Homebrew -- Start
-if [ ! -e "/usr/local/bin/brew" ]
-then
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.github.com/gist/323731)"
-
-    clear
-    echo "√ - Homebrew Installed"
-else
-    echo "√ - Homebrew Found"
-fi
-# Check for Homebrew -- End
-
-# Check for Wget -- Start
-if [ ! -e "/usr/local/bin/wget" ]
-then
-    brew install wget
-
-    clear
-    echo "√ - Wget Installed"
-else
-    echo "√ - Wget Found"
-fi
-# Check for Wget -- End
 
 first_time_check ## check if its their first time
 
